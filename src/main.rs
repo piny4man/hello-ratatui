@@ -1,42 +1,43 @@
-use crossterm::{
-    event::{self, KeyCode, KeyEventKind},
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
-    ExecutableCommand,
-};
 use ratatui::{
     prelude::{CrosstermBackend, Stylize, Terminal},
     widgets::Paragraph,
 };
-use std::io::{stdout, Result};
 
-fn main() -> Result<()> {
-    let _ = stdout().execute(EnterAlternateScreen);
-    enable_raw_mode()?;
-    let mut terminal = Terminal::new(CrosstermBackend::new(stdout()))?;
-    println!("Hello, world!");
-    terminal.clear()?;
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    crossterm::terminal::enable_raw_mode()?;
+    crossterm::execute!(std::io::stderr(), crossterm::terminal::EnterAlternateScreen)?;
+
+    let mut terminal = Terminal::new(CrosstermBackend::new(std::io::stderr()))?;
+
+    let mut counter = 0;
 
     loop {
         terminal.draw(|frame| {
-            let area = frame.size();
             frame.render_widget(
-                Paragraph::new("Hello Piny4s from RataTUI! (press 'q' to quit)")
+                Paragraph::new(format!("Counter: {counter}"))
                     .yellow()
                     .on_black(),
-                area,
+                frame.size(),
             );
         })?;
 
-        if event::poll(std::time::Duration::from_millis(16))? {
-            if let event::Event::Key(key) = event::read()? {
-                if key.kind == KeyEventKind::Press && key.code == KeyCode::Char('q') {
-                    break;
+        if crossterm::event::poll(std::time::Duration::from_millis(250))? {
+            if let crossterm::event::Event::Key(key) = crossterm::event::read()? {
+                if key.kind == crossterm::event::KeyEventKind::Press {
+                    match key.code {
+                        crossterm::event::KeyCode::Up => counter += 1,
+                        crossterm::event::KeyCode::Down => counter -= 1,
+                        crossterm::event::KeyCode::Char('q') => break,
+                        crossterm::event::KeyCode::Esc => break,
+                        _ => {}
+                    }
                 }
             }
         }
     }
 
-    stdout().execute(LeaveAlternateScreen)?;
-    disable_raw_mode()?;
+    crossterm::execute!(std::io::stderr(), crossterm::terminal::LeaveAlternateScreen)?;
+    crossterm::terminal::disable_raw_mode()?;
+
     Ok(())
 }
