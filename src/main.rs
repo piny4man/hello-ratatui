@@ -80,7 +80,8 @@ fn run() -> Result<()> {
 
 fn main() -> Result<()> {
     startup()?;
-    run()?;
+    let result = run();
     shutdown()?;
+    result?;
     Ok(())
 }
