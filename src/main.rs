@@ -13,8 +13,6 @@ use ratatui::{
     widgets::Paragraph,
 };
 
-type Err = Box<dyn std::error::Error>;
-
 struct App {
     counter: i64,
     should_quit: bool,
@@ -43,13 +41,13 @@ fn ui(app: &App, frame: &mut Frame<'_>) {
 
 fn update(app: &mut App) -> Result<()> {
     if event::poll(std::time::Duration::from_millis(250))? {
-        if let event::Event::Key(key) = event::read()? {
+        if let Key(key) = event::read()? {
             if key.kind == event::KeyEventKind::Press {
                 match key.code {
-                    event::KeyCode::Up => app.counter += 1,
-                    event::KeyCode::Down => app.counter -= 1,
-                    event::KeyCode::Char('q') => app.should_quit = true,
-                    event::KeyCode::Esc => app.should_quit = true,
+                    Up => app.counter += 1,
+                    Down => app.counter -= 1,
+                    Char('q') => app.should_quit = true,
+                    Esc => app.should_quit = true,
                     _ => {}
                 }
             }
